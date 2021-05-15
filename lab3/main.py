@@ -34,22 +34,22 @@ def main():
 
     client_socket.connect(server_addr)
 
-    message = input(" -> ")
+    message = input("Get")
 
     while message.strip() != ".":
         cmd = str(message)
         if cmd.startswith("exit"):
             print("see u!")
             break
-        fileName = cmd.split(" ")[1]
+        url = cmd.split(" ")[1]
 
 
         # Check for if a file exists
-        if cmd.startswith("utake"):
-            if not os.path.exists(fileName):
-                print(fileName + " doesn't exist")
-                message = input(" -> ")
-                continue
+        # if cmd.startswith("utake"):
+        #     if not os.path.exists(fileName):
+        #         print(fileName + " doesn't exist")
+        #         message = input(" -> ")
+        #         continue
 
         client_socket.send(cmd.encode())
         response = client_socket.recv(1024).decode()
