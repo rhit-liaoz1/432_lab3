@@ -34,7 +34,7 @@ def main():
 
     client_socket.connect(server_addr)
 
-    message = input("Get")
+    message = input("->")
 
     while message.strip() != ".":
         cmd = str(message)
@@ -53,22 +53,14 @@ def main():
 
         client_socket.send(cmd.encode())
         response = client_socket.recv(1024).decode()
+        getURL(url);
 
         if response == "ready to transmit":
-            dir = input(""" Enter your save directory:
-                            -> """)
-            if (dir == ""):
-                dir = "received_files/" + fileName
             client_socket.send("ready".encode())
-            fp = open(dir, 'w')
-            data = client_socket.recv(2048).decode()
-            fp.write(data)
-            fp.close()
+
         elif response == "ready to receive":
-            fp = open(fileName)
-            data = fp.read(2024)
-            client_socket.send(data.encode())
-            fp.close()
+            client_socket.send("")
+
 
         else:
             print(response)
