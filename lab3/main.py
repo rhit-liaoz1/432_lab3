@@ -22,6 +22,9 @@ def getURL(url):
 
 
 def main():
+    host = socket.gethostname()
+    print("Host name: " + str(host))
+
     if len(sys.argv) != 3:
         print("Usage: python client.py <server_IP> <server_port>")
         sys.exit()
