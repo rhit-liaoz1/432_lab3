@@ -1,5 +1,5 @@
 # Get data from remote server, forward that data to a local client
-import requests
+# import requests
 import socket
 import sys
 import os
@@ -10,17 +10,17 @@ addr =""
 
 port = 6000
 
-def getURL(url):
-    try:
-        req = requests.get(url = url)
-        if req.status_code == 200:
-            print('Success.')
-            html = req.text
-            return html
-        else:
-            exit('Can not get the website.')
-    except ConnectionError:
-         exit('ConnectionError.')
+# def getURL(url):
+#     try:
+#         req = requests.get(url = url)
+#         if req.status_code == 200:
+#             print('Success.')
+#             html = req.text
+#             return html
+#         else:
+#             exit('Can not get the website.')
+#     except ConnectionError:
+#          exit('ConnectionError.')
 
 def main():
     host = socket.gethostname()
@@ -100,7 +100,6 @@ def main():
 def thread_helper(conn, address):
 
     rec = conn.recv(2024)
-
     # html = getURL(url)
     # url = rec.split('\n')[0].split(' ')[0]
 
