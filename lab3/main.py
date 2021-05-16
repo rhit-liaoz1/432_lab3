@@ -5,8 +5,8 @@ import sys
 import os
 import _thread
 
-url =""
-addr =""
+Host =""
+get =""
 
 port = 6000
 
@@ -60,13 +60,13 @@ def main():
         conn, address = server_socket.accept()
 
         #start a new thread by calling thread_helper function
-        _thread.start_new_thread(thread_helper,(conn, address))
         #might not neet close
         print("Connection from: " + str(address))
         # server_socket.close()
         cmd = ""
         while str(cmd).strip() != '.':
             cmd = conn.recv(2048).decode()
+            print(cmd)
             if not cmd:
                 break
             if len(str(cmd).split(" ")) != 3:
@@ -77,16 +77,11 @@ def main():
                     conn.send("Invalid command format".encode())
                     continue
                 else:
-                    url = cmd.split(" ")[1]
-                    addr = cmd.split(" ")[2]
-
-                        # conn.send("ready to transmit".encode())
-                        # response = conn.recv(2048).decode()
-                        # if (response == "ready"):
-                        #     fp = open(filename, 'r')
-                        #     data = fp.read(2048)
-                        #     conn.send(data.encode())
-                        #     fp.close()
+                    Host = cmd.split(" ")[1]
+                    # cmd.split(" ")[2]
+                    get = "/ HTTP/1.0"
+                    send_pa = Host + "\n" + get + "\n" + "Connection: close"
+                    _thread.start_new_thread(thread_helper, (conn, address, send_pa))
             elif (cmd.startswith("exit") or cmd.startswith("^]")):
                 print("see u!")
                 break
@@ -95,54 +90,59 @@ def main():
 
         server_socket.close()
 
-def thread_helper(conn, address):
-    rec = conn.recv(2024)
-    # html = getURL(url)
-    url = rec.split('\n')[0].split(' ')[1]
-    http  = url.find("://")
-    if (http==-1):
-        temp = url
-    else:
-        temp = url[(http+3):]
-    pp = temp.find(":")
-    # find web server
-    webserver_pos = temp.find("/")
-    if webserver_pos == -1:
-        webserver_pos = len(temp)
-    webserver = ""
-    port = -1
-    if (pp == -1 or webserver_pos < pp):
-        port = 4000
-        webserver = temp[:webserver_pos]
-    else:
-        port = int((temp[(pp + 1):])[:webserver_pos - pp - 1])
-        webserver = temp[:pp]
+def thread_helper(conn, address, se):
+    # print(conn)
+    # rec = conn.recv(2024)
+    # print(rec)
+    # # html = getURL(url)
+    # url = rec.split('\n')[0].split(' ')[1]
+    # print("url:",url)
+    # http  = url.find("://")
+    # if (http==-1):
+    #     temp = url
+    # else:
+    #     temp = url[(http+3):]
+    # pp = temp.find(":")
+    # # find web server
+    # webserver_pos = temp.find("/")
+    # if webserver_pos == -1:
+    #     webserver_pos = len(temp)
+    # webserver = ""
+    # port = -1
+    # if (pp == -1 or webserver_pos < pp):
+    #     port = 4000
+    #     webserver = temp[:webserver_pos]
+    # else:
+    #     port = int((temp[(pp + 1):])[:webserver_pos - pp - 1])
+    #     webserver = temp[:pp]
 
     # connect to webserver
     try:
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
         # bind
-        server_socket.connect((webserver, port))
+        server_socket.connect((Host, port))
 
         # listen
-        server_socket.send(rec)
+        server_socket.send(se)
+
+        while True:
+            try:
+                # send data from web server to client
+                data = socket.server_socket(2024).decode()
+                conn.send(data)
+            except socket.error:
+                print("error socket")
+                if server_socket:
+                    server_socket.close()
+                sys.exit(1)
     except socket.error:
         print("error socket")
         if server_socket:
             server_socket.close()
         sys.exit(1)
 
-    while True:
-        try:
-            # send data from web server to client
-            data = socket.server_socket(2024).decode()
-            conn.send(data)
-        except socket.error:
-            print("error socket")
-            if server_socket:
-                server_socket.close()
-            sys.exit(1)
+
 
 
 if __name__ == '__main__':
