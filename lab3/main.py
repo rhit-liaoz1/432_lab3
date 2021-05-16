@@ -75,7 +75,8 @@ def main():
                     conn.send("Invalid command format".encode())
                     continue
                 else:
-                    Host = cmd.split(" ")[1]
+                    Host = "www.columbia.edu"
+                        #cmd.split(" ")[1]
                     # cmd.split(" ")[2]
                     get = "/ HTTP/1.0"
                     send_pa = Host + "\n" + get + "\n" + "Connection: close"
