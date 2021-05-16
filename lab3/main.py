@@ -5,8 +5,6 @@ import sys
 import os
 import _thread
 
-Host =""
-get =""
 
 port = 6000
 
@@ -90,38 +88,38 @@ def main():
 
         server_socket.close()
 
-def thread_helper(conn, address, se):
+def thread_helper(conn, address, se, Host, get):
     # print(conn)
-    rec = conn.recv(2024)
-    print(rec)
+    # rec = conn.recv(2024)
+    # print(rec)
     # # html = getURL(url)
-    url = rec.split('\n')[0].split(' ')[1]
-    print("url:",url)
-    http  = url.find("://")
-    if (http==-1):
-        temp = url
-    else:
-        temp = url[(http+3):]
-    pp = temp.find(":")
-    # find web server
-    webserver_pos = temp.find("/")
-    if webserver_pos == -1:
-        webserver_pos = len(temp)
-    webserver = ""
-    port = -1
-    if (pp == -1 or webserver_pos < pp):
-        port = 4000
-        webserver = temp[:webserver_pos]
-    else:
-        port = int((temp[(pp + 1):])[:webserver_pos - pp - 1])
-        webserver = temp[:pp]
-
+    # url = rec.split('\n')[0].split(' ')[1]
+    # print("url:",url)
+    # http  = url.find("://")
+    # if (http==-1):
+    #     temp = url
+    # else:
+    #     temp = url[(http+3):]
+    # pp = temp.find(":")
+    # # find web server
+    # webserver_pos = temp.find("/")
+    # if webserver_pos == -1:
+    #     webserver_pos = len(temp)
+    # webserver = ""
+    # port = -1
+    # if (pp == -1 or webserver_pos < pp):
+    #     port = 4000
+    #     webserver = temp[:webserver_pos]
+    # else:
+    #     port = int((temp[(pp + 1):])[:webserver_pos - pp - 1])
+    #     webserver = temp[:pp]
+    print("host:", Host)
     # connect to webserver
     try:
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
         # bind
-        server_socket.connect((webserver, port))
+        server_socket.connect((Host, port))
 
         # listen
         server_socket.send(se)
