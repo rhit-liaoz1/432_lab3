@@ -3,8 +3,8 @@
 import socket
 import sys
 import os
-import _thread
-
+import threading
+from urllib.parse import urlsplit
 
 port = 6000
 
@@ -19,6 +19,21 @@ port = 6000
 #             exit('Can not get the website.')
 #     except ConnectionError:
 #          exit('ConnectionError.')
+
+def parse_request(request):
+    if request == '':
+        return None, None
+    split_request = request.split("\r\n")
+    headers = {}
+    for complete_header in split_request[1:]:
+        if complete_header.strip() == "":
+            continue
+        header, value = complete_header.split(':', 1)
+        headers[header] = value.strip()
+
+    method, url, http_protocol = split_request[0].split(' ')
+    return method, urlsplit(url), http_protocol, headers
+
 
 def main():
     host = socket.gethostname()
@@ -61,46 +76,37 @@ def main():
         #might not neet close
         print("Connection from: " + str(address))
         # server_socket.close()
-        cmd = ""
-        while str(cmd).strip() != '.':
-            cmd = conn.recv(2048).decode()
-            # print(cmd)
-            if not cmd:
-                break
-            if len(str(cmd).split(" ")) != 3:
-                conn.send("Invalid command format".encode())
-                continue
+        cmd = conn.recv(8192).decode()
 
-            if (cmd.startswith("GET")):
-                if len(str(cmd).split(" ")) != 3:
-                    conn.send("Invalid command format".encode())
-                    continue
-                else:
-                    checker = "http"
-                    if checker in cmd:
-                        h = cmd.split(" ")[1]
-                        get = cmd.split(" ")[2]
-                        h1 = h.split('//', 1)[1]
-                        Host = "www." + h1.split('/', 1)[0]
-                        getwhat = "/" + h1.split('/', 1)[1]
-                        send_pa = "GET " + getwhat + " " + get + "\r\n" + "Host: " + Host + "\r\n" + "Connection: close\r\n\r\n"
-                    else:
-                        h = cmd.split(" ")[1]
-                        get = cmd.split(" ")[2]
-                        Host = h.split('/',1)[0]
-                        getwhat="/"+h.split('/',1)[1]
-                        send_pa ="GET "+getwhat+" "+get+"\r\n"+"Host: "+Host+"\r\n"+"Connection: close\r\n\r\n"
-                    print(send_pa)
-                    #send_pa = "GET /~fdc/sample.html HTTP/1.0\r\nHost: www.columbia.edu\r\nConnection: close\r\n\r\n"
-                    _thread.start_new_thread(thread_helper, (conn, address, send_pa, Host, get))
-            elif (cmd.startswith("exit") or cmd.startswith("^]")):
-                print("see u!")
-                break
-            else:
-                conn.send("Not Implemented".encode())
-            conn.close
+        if not cmd:
+            break
 
-def thread_helper(conn, address, se, Host, get):
+        method, url, http_ver, headers = parse_request(cmd)
+        if method == 'GET':
+            print(method, url, http_ver, headers)
+            headers["Host"] = Host = url.netloc
+            headers["Connection"] = "close"
+            send_pa = f"{method} {url.path} {http_ver}\r\n"
+
+            for header_key, header_value in headers.items():
+                send_pa += f"{header_key}: {header_value}\r\n"
+            send_pa += "\r\n"
+            print(f"send_pa:\n{send_pa}")
+            t = threading.Thread(target=_thread_helper, args=(conn, address, send_pa, Host))
+            t.start()
+        elif (cmd.startswith("exit") or cmd.startswith("^]")):
+            print("see u!")
+            conn.close()
+            print("Closed connection from:", address)
+            break
+        else:
+            conn.send("Invalid command".encode())
+            conn.close()
+            print("Closed connection from:", address)
+
+    server_socket.close()
+
+def _thread_helper(conn, address, se, Host):
     # print(conn)
     # rec = conn.recv(2024)
     # print(rec)
@@ -158,18 +164,19 @@ def thread_helper(conn, address, se, Host, get):
     
     try:
         # receive data from website
-        data = server_socket.recv(2024).decode()
+        data = server_socket.recv(8192)
         print("Receive data from website",data)
         # send data from web server to client
-        conn.send(data.encode())
-        server_socket.close()
-
+        conn.send(data)
+        conn.close()
+        print("Closed connection from:", address)
     except socket.error:
         print("error socket")
         if server_socket:
             server_socket.close()
         sys.exit(1)
-    conn.close
+    
+
     
     
 
