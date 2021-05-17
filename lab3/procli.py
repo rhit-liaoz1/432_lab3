@@ -36,15 +36,16 @@ def client():
 
 
         client_socket.send(cmd.encode())
+		
         response = client_socket.recv(2024).decode()
 
         # if response == "ready to transmit":
-        dir = "received_files/" + "rec.txt"
+        #dir = "received_files/" + "rec.txt"
         # client_socket.send("ready".encode())
-        fp = open(dir, 'w')
-        data = client_socket.recv(2048).decode()
-        fp.write(data)
-        fp.close()
+        #fp = open(dir, 'w')
+        #data = client_socket.recv(2048).decode()
+        #fp.write(data)
+        #fp.close()
         # else:
         print(response)
 

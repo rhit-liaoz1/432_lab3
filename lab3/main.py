@@ -79,8 +79,8 @@ def main():
                         #cmd.split(" ")[1]
                     # cmd.split(" ")[2]
                     get = "/ HTTP/1.0"
-                    send_pa = Host + "\n" + get + "\n" + "Connection: close"
-                    _thread.start_new_thread(thread_helper, (conn, address, send_pa))
+                    send_pa = "GET /~fdc/sample.html HTTP/1.0\r\nHost: www.columbia.edu\r\nConnection: close\r\n\r\n"
+                    _thread.start_new_thread(thread_helper, (conn, address, send_pa, Host, get))
             elif (cmd.startswith("exit") or cmd.startswith("^]")):
                 print("see u!")
                 break
@@ -118,31 +118,66 @@ def thread_helper(conn, address, se, Host, get):
     # connect to webserver
     try:
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
+    except socket.error:
+        print("error socket: webserver")
+        if server_socket:
+            server_socket.close()
+        sys.exit(1)
+        
+    websiteIP = socket.gethostbyname(Host)
+    try:
         # bind
-        server_socket.connect((Host, port))
+        server_socket.connect((websiteIP, 80))
+    except socket.error:
+        print("error connection: webserver")
+        if server_socket:
+            server_socket.close()
+        sys.exit(1)
 
-        # listen
-        server_socket.send(se)
-
-        while True:
-            try:
-                # send data from web server to client
-                data = socket.server_socket(2024).decode()
-                conn.send(data)
-            except socket.error:
-                print("error socket")
-                if server_socket:
-                    server_socket.close()
-                sys.exit(1)
+        # forward message to website
+    try:
+        server_socket.send(se.encode())
+    except socket.error:
+        print("error send: webserver")
+        if server_socket:
+            server_socket.close()
+        sys.exit(1)
+        
+    print("Sent data to website")
+    
+    try:
+        # receive data from website
+        data = server_socket.recv(2024).decode()
+        print("Receive data from website",data)
+        # send data from web server to client
+        conn.send(data.encode())
     except socket.error:
         print("error socket")
         if server_socket:
             server_socket.close()
         sys.exit(1)
+    
+
+    
+    
+
+#    while True:
+#        try:
+#            # receive data from website
+#            data = server_socket.recv(2024).decode()
+#            print("Receive data from website",data)
+#			# send data from web server to client
+#            conn.send(data.encode())
+#        except socket.error:
+#            print("error socket")
+#            if server_socket:
+#                server_socket.close()
+#            sys.exit(1)
+    
 
 
 
 
 if __name__ == '__main__':
     main()
+
