@@ -70,6 +70,7 @@ def main():
             if len(str(cmd).split(" ")) != 3:
                 conn.send("Invalid command format".encode())
                 continue
+
             if (cmd.startswith("GET")):
                 if len(str(cmd).split(" ")) != 3:
                     conn.send("Invalid command format".encode())
@@ -96,9 +97,8 @@ def main():
                 print("see u!")
                 break
             else:
-                conn.send("Invalid command".encode())
-
-        server_socket.close()
+                conn.send("Not Implemented".encode())
+            conn.close
 
 def thread_helper(conn, address, se, Host, get):
     # print(conn)
@@ -162,13 +162,14 @@ def thread_helper(conn, address, se, Host, get):
         print("Receive data from website",data)
         # send data from web server to client
         conn.send(data.encode())
+        server_socket.close()
+
     except socket.error:
         print("error socket")
         if server_socket:
             server_socket.close()
         sys.exit(1)
-    
-
+    conn.close
     
     
 
