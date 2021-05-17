@@ -64,7 +64,7 @@ def main():
         cmd = ""
         while str(cmd).strip() != '.':
             cmd = conn.recv(2048).decode()
-            print(cmd)
+            # print(cmd)
             if not cmd:
                 break
             if len(str(cmd).split(" ")) != 3:
@@ -75,11 +75,22 @@ def main():
                     conn.send("Invalid command format".encode())
                     continue
                 else:
-                    Host = "www.columbia.edu"
-                        #cmd.split(" ")[1]
-                    # cmd.split(" ")[2]
-                    get = "/ HTTP/1.0"
-                    send_pa = "GET /~fdc/sample.html HTTP/1.0\r\nHost: www.columbia.edu\r\nConnection: close\r\n\r\n"
+                    checker = "http"
+                    if checker in cmd:
+                        h = cmd.split(" ")[1]
+                        get = cmd.split(" ")[2]
+                        h1 = h.split('//', 1)[1]
+                        Host = "www." + h1.split('/', 1)[0]
+                        getwhat = "/" + h1.split('/', 1)[1]
+                        send_pa = "GET " + getwhat + " " + get + "\r\n" + "Host: " + Host + "\r\n" + "Connection: close\r\n\r\n"
+                    else:
+                        h = cmd.split(" ")[1]
+                        get = cmd.split(" ")[2]
+                        Host = h.split('/',1)[0]
+                        getwhat="/"+h.split('/',1)[1]
+                        send_pa ="GET "+getwhat+" "+get+"\r\n"+"Host: "+Host+"\r\n"+"Connection: close\r\n\r\n"
+                    print(send_pa)
+                    #send_pa = "GET /~fdc/sample.html HTTP/1.0\r\nHost: www.columbia.edu\r\nConnection: close\r\n\r\n"
                     _thread.start_new_thread(thread_helper, (conn, address, send_pa, Host, get))
             elif (cmd.startswith("exit") or cmd.startswith("^]")):
                 print("see u!")
